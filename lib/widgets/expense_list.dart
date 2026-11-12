@@ -5,22 +5,16 @@ import 'expense_tile.dart';
 
 class ExpenseList extends StatelessWidget {
   final List<Expense> expenses;
-  final void Function(Expense)? onDelete;
+  final ValueChanged<Expense> onDelete;
 
   const ExpenseList({
     super.key,
     required this.expenses,
-    this.onDelete,
+    required this.onDelete,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (expenses.isEmpty) {
-      return const Center(
-        child: Text('No expenses yet. Tap + to add one.'),
-      );
-    }
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -32,23 +26,17 @@ class ExpenseList extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: ListView.builder(
-            itemCount: expenses.length,
-            itemBuilder: (context, index) {
-              final e = expenses[index];
-              return Dismissible(
-                key: ValueKey('${e.title}-${e.date}-$index'),
-                onDismissed: (_) => onDelete?.call(e),
-                background: Container(
-                  color: Colors.red,
-                  alignment: Alignment.centerRight,
-                  padding: const EdgeInsets.only(right: 16),
-                  child: const Icon(Icons.delete, color: Colors.white),
+          child: expenses.isEmpty
+              ? const Center(child: Text('No expenses yet'))
+              : ListView(
+                  children: [
+                    for (final e in expenses)
+                      ExpenseTile(
+                        expense: e,
+                        onDelete: () => onDelete(e),
+                      ),
+                  ],
                 ),
-                child: ExpenseTile(expense: e),
-              );
-            },
-          ),
         ),
       ],
     );

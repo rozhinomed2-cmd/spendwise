@@ -1,30 +1,36 @@
 ﻿import 'package:flutter/material.dart';
-import 'package:spendwise/models/expense.dart';
-import 'package:spendwise/widgets/expense_list.dart';
-import 'package:spendwise/widgets/summary_card.dart';
+import '../models/expense.dart';
+import '../widgets/category_chips.dart';
+import '../widgets/expense_list.dart';
+import '../widgets/summary_card.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final bool isDark;
+  final VoidCallback onToggleTheme;
+
+  const HomeScreen({
+    super.key,
+    required this.isDark,
+    required this.onToggleTheme,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final List<Expense> _expenses = List.of(sampleExpenses);
-  final List<String> _categories = [
-    'All',
-    'Food',
-    'Transport',
-    'Bills',
-    'Fun',
-    
-  ];
-  String _selectedCategory = 'All';
+  // The state of this screen:
+  final List<Expense> _expenses = [...sampleExpenses];
+  String _category = 'All';
 
-  List<Expense> get _filteredExpenses {
-    if (_selectedCategory == 'All') return _expenses;
-    return _expenses.where((e) => e.category == _selectedCategory).toList();
+  // Only the expenses of the selected category.
+  List<Expense> _filtered() {
+    if (_category == 'All') return _expenses;
+    final result = <Expense>[];
+    for (final e in _expenses) {
+      if (e.category == _category) result.add(e);
+    }
+    return result;
   }
 
   void _addExpense() {
@@ -33,7 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
         0,
         Expense(
           title: 'Coffee',
-          amount: 3000,
+          amount: 2000,
           category: 'Food',
           date: DateTime.now(),
         ),
@@ -47,59 +53,42 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void _selectCategory(String category) {
+    setState(() {
+      _category = category;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final visible = _filteredExpenses;
+    final visible = _filtered();
+    final card = SummaryCard(total: totalOf(visible));
+    final chips = CategoryChips(
+      selected: _category,
+      onSelected: _selectCategory,
+    );
+    final list = ExpenseList(
+      expenses: visible,
+      onDelete: _deleteExpense,
+    );
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('SpendWise (${_expenses.length})'),
+        title: const Text('SpendWise'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.delete_sweep),
-            tooltip: 'Delete all',
-            onPressed: () {
-              setState(() {
-                _expenses.clear();
-              });
-            },
+            icon: Icon(
+              widget.isDark ? Icons.light_mode : Icons.dark_mode,
+            ),
+            onPressed: widget.onToggleTheme,
           ),
         ],
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
-          final card = SummaryCard(total: totalOf(visible));
-          final chips = SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: _categories.map((cat) {
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: ChoiceChip(
-                    label: Text(cat),
-                    selected: _selectedCategory == cat,
-                    onSelected: (_) {
-                      setState(() => _selectedCategory = cat);
-                    },
-                  ),
-                );
-              }).toList(),
-            ),
-          );
-          final list = ExpenseList(
-            expenses: visible,
-            onDelete: _deleteExpense,
-          );
-
           if (constraints.maxWidth < 600) {
             return Column(
-              children: [
-                card,
-                chips,
-                const SizedBox(height: 8),
-                Expanded(child: list),
-              ],
+              children: [card, chips, Expanded(child: list)],
             );
           }
 

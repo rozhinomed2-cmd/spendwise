@@ -7,8 +7,24 @@ void main() {
   runApp(const SpendWiseApp());
 }
 
-class SpendWiseApp extends StatelessWidget {
+// Stateful: it remembers whether the app is in light or dark mode.
+class SpendWiseApp extends StatefulWidget {
   const SpendWiseApp({super.key});
+
+  @override
+  State<SpendWiseApp> createState() => _SpendWiseAppState();
+}
+
+class _SpendWiseAppState extends State<SpendWiseApp> {
+  ThemeMode _themeMode = ThemeMode.light;
+
+  void _toggleTheme() {
+    setState(() {
+      _themeMode = _themeMode == ThemeMode.light
+          ? ThemeMode.dark
+          : ThemeMode.light;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,8 +33,11 @@ class SpendWiseApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
-      themeMode: ThemeMode.dark,
-      home: const HomeScreen(),
+      themeMode: _themeMode,
+      home: HomeScreen(
+        isDark: _themeMode == ThemeMode.dark,
+        onToggleTheme: _toggleTheme,
+      ),
     );
   }
 }

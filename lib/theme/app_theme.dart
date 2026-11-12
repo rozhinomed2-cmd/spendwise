@@ -1,13 +1,14 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 // All colors and text styles of SpendWise live here
 class AppTheme {
   static ThemeData light() => _build(Brightness.light);
   static ThemeData dark() => _build(Brightness.dark);
-  static ThemeData _build(Brightness brrightness) {
+
+  static ThemeData _build(Brightness brightness) {
     final scheme = ColorScheme.fromSeed(
-      seedColor: Colors.cyan,
-      brightness: brrightness,
+      seedColor: const Color(0xFF4A148C), // Dark Purple
+      brightness: brightness,
     );
     return ThemeData(
       colorScheme: scheme,
@@ -15,6 +16,10 @@ class AppTheme {
         backgroundColor: scheme.primary,
         foregroundColor: scheme.onPrimary,
         centerTitle: true,
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: scheme.primary,
+        foregroundColor: scheme.onPrimary,
       ),
     );
   }
